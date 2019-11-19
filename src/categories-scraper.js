@@ -3,20 +3,17 @@ const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 const url = 'https://www.cntv.cl/videoteca';
 
-const parseSeries = async () => {
+const parseCategories = async () => {
   try {
     const response = await axios.get(url);
     const dom = JSDOM.fragment(response.data);
-    const items = Array.from(dom.querySelectorAll('.articulosFiltro'));
-   
-    const series = items.map((serie) => {
-      const url = serie.querySelector('a').href;
-      const img = serie.querySelector('img').src;
-      const title = serie.querySelector('h2').textContent;
+    const ul = dom.querySelector('.taxMenu');
+    const items = Array.from(ul.querySelectorAll('.tab'));
 
-      return { url, img, title }
+    const categories = items.map((category) => {
+      return category.textContent;
     });
-    return series;
+    return categories;
   } catch(error) {
     console.error(error)
   }
@@ -25,8 +22,8 @@ const parseSeries = async () => {
 
 (async () => {
     try {
-      const series = await parseSeries(url);
-      console.log('series', series);
+      const categories = await parseCategories();
+      console.log('Categories', categories);
     } catch (e) {
       console.error('Something went wrong!');
     }
