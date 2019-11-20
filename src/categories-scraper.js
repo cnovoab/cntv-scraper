@@ -1,30 +1,23 @@
-const axios = require('axios');
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
-const url = 'https://www.cntv.cl/videoteca';
 
-const parseCategories = async () => {
+const parseCategories = (document) => {
   try {
-    const response = await axios.get(url);
-    const dom = JSDOM.fragment(response.data);
+    const dom = JSDOM.fragment(document);
     const ul = dom.querySelector('.taxMenu');
     const items = Array.from(ul.querySelectorAll('.tab'));
 
-    const categories = items.map((category) => {
-      return category.textContent;
-    });
-    return categories;
+    return items
+      .map(category => {
+        return {
+          code: category.firstChild.href.replace('.', ''),
+          name: category.textContent
+        }
+      })
+      .filter(category => category.code.includes('area'));
   } catch(error) {
     console.error(error)
   }
 }
 
-
-(async () => {
-    try {
-      const categories = await parseCategories();
-      console.log('Categories', categories);
-    } catch (e) {
-      console.error('Something went wrong!');
-    }
-})();
+module.exports = parseCategories;
