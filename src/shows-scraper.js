@@ -12,21 +12,23 @@ const parseShows = async () => {
   try {
     const response = await axios.get(url);
     const dom = JSDOM.fragment(response.data);
-    const categories = parseCategories(response.data);
+    const categoryList = parseCategories(response.data);
     const shows = Array.from(dom.querySelectorAll('.articulosFiltro'));
 
     return await Promise.all(
       shows.map(async (show) => {
-        const categoryCodes = Array.from(show.classList)
-          .map(code => categories.find(c => c.code === code))
+        const categories = Array.from(show.classList)
+          .map(code => categoryList.find(c => c.code === code))
           .filter(Boolean)
           .map(c => c.name);
-        const showPath = show.querySelector('a').href;
+        const path = show.querySelector('a').href;
         const img = show.querySelector('img').src;
         const title = show.querySelector('h2').textContent;
-        const episodes = await parseEpisodes(showPath); 
+        const slug = path.substring(1, path.indexOf('/', 1)); 
+        const code = path.substring(path.lastIndexOf('/') + 1, path.lastIndexOf('.'));
+        const episodes = await parseEpisodes(path); 
 
-        return { categoryCodes, showPath, img, title, episodes }
+        return { code, title, categories, path, img, slug, episodes }
       })
     );
   } catch(error) {
